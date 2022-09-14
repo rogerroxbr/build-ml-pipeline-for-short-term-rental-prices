@@ -6,6 +6,7 @@ exporting the result to a new artifact
 import os
 import argparse
 import logging
+
 import wandb
 import pandas as pd
 
@@ -14,7 +15,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)-15s %(message)s")
 logger = logging.getLogger()
 
 
-def go(args):
+def basic_clean(args):
     """
     Function to download data from W&B, apply basic data cleaning,
     and logging
@@ -33,6 +34,7 @@ def go(args):
     artifact_path = artifact.file()
 
     logger.info("Loading artifact to dataframe")
+    # read artifact
     df = pd.read_csv(artifact_path)
 
     logger.info("Cleaning the data")
@@ -50,16 +52,18 @@ def go(args):
 
     logger.info("Creating artifact")
     artifact = wandb.Artifact(
-        name=args.output_artifact_name,
-        type=args.output_artifact_type,
-        description=args.output_artifact_description,
+        name=args.output_artifact,
+        type=args.output_type,
+        description=args.output_description,
     )
+
     artifact.add_file(filename)
 
     logger.info("Logging artifact")
     run.log_artifact(artifact)
 
     os.remove(filename)
+    logger.info("Cleaned data artifact logged to W&B")
 
 
 if __name__ == "__main__":
@@ -110,4 +114,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    go(args)
+    basic_clean(args)
