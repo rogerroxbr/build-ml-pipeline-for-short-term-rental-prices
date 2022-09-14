@@ -15,6 +15,15 @@ logger = logging.getLogger()
 
 
 def go(args):
+    """
+    Function to download data from W&B, apply basic data cleaning,
+    and logging
+    argument:
+        args : command line argument to specify artifact information and
+            basic cleaning configuration
+    return:
+        None
+    """
 
     run = wandb.init(job_type="basic_cleaning")
     run.config.update(args)
@@ -36,7 +45,7 @@ def go(args):
     )
     df = df[idx].copy()
 
-    filename = "clean_data"
+    filename = args.output_artifact
     df.to_csv(filename, index=False)
 
     logger.info("Creating artifact")
