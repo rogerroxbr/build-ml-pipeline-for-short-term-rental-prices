@@ -4,15 +4,14 @@ This script trains a Random Forest
 """
 import argparse
 import logging
-from msilib.schema import Signature
 import os
 import shutil
-import tempfile
-from tkinter.ttk import setup_master
+import json
+
 import matplotlib.pyplot as plt
 
 import mlflow
-import json
+from mlflow.models import infer_signature
 
 import pandas as pd
 import numpy as np
@@ -34,7 +33,8 @@ from sklearn.pipeline import Pipeline, make_pipeline
 
 def delta_date_feature(dates):
     """
-    Given a 2d array containing dates (in any format recognized by pd.to_datetime), it returns the delta in days
+    Given a 2d array containing dates (in any format recognized by pd.to_datetime),
+    it returns the delta in days
     between each date and the most recent date in its column
     """
     date_sanitized = pd.DataFrame(dates).apply(pd.to_datetime)
@@ -115,30 +115,26 @@ def go(args):
     if os.path.exists("random_forest_dir"):
         shutil.rmtree("random_forest_dir")
 
+    export_path = "random_forest_dir"
     # Save the sk_pipe pipeline as a mlflow.sklearn model in the directory "random_forest_dir"
-    signature = mlflow.models.infer_signature(
-        X_val[processed_features], y_pred
+    signature = infer_signature(X_val, y_pred)
+
+    mlflow.sklearn.save_model(
+        sk_pipe,
+        export_path,
+        serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE,
+        signature=signature,
+        input_example=X_val.iloc[:2],
     )
 
-    with tempfile.TemporaryDirectory() as temp_dir:
-
-        export_path = os.path.join(temp_dir, "random forest_dir")
-
-        mlflow.sklearn.save_model(
-            sk_pipe,
-            export_path,
-            serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICK,
-            signature=signature,
-            input_example=X_val.iloc[:2],
-        )
-
-    artifact = wandb.Artifacts(
+    artifact = wandb.Artifact(
         args.output_artifact,
         type="model_export",
         description="Random forest pipeline export",
         metadata=rf_config,
     )
     artifact.add_dir(export_path)
+
     logger.info("Logging")
     run.log_artifact(artifact)
 
