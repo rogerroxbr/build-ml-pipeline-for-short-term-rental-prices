@@ -564,6 +564,13 @@ Then commit your change, make a new release (for example ``1.0.1``) and retry (o
 ``-v 1.0.1`` when calling mlflow this time). Now the run should succeed and voit la', 
 you have trained your new model on the new data.
 
+## Next step in future
+
+1 - In the data exploration step, you can go far beyond what is shown here, such as including visualizations and other data cleaning steps. This should allow you to get even better performance from the model.
+2 - Explore other models beyond the RandomForest trained here, creating a new separate step or customizing the random forest one to accommodate different types of models.
+3 - Add discussion to a README file concerning other changes you might consider in future releases of your pipeline.
+
+
 ## License
 
 [License](LICENSE.txt)
